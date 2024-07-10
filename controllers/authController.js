@@ -15,7 +15,7 @@ function generateRefreshToken(user) {
 }
 
 function validatePassword(password) {
-    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+    const regex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
     return regex.test(password);
 }
 
@@ -29,23 +29,12 @@ exports.register = async (req, res) => {
         return res.status(400).json({ message: 'Passwords do not match' });
     }
 
-    if (password.length < 8) {
-        return res.status(400).json({ message: 'Password must be at least 8 characters long' });
-    }
-
     if (!validatePassword(password)) {
         return res.status(400).json({ message: 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number' });
     }
 
     try {
-        // Hashing password before saving user
-
-        const hashedPassword = await bcrypt.hash(req.body.password, 10);
-
-        const newUser = new User({
-            ...req.body,
-            password: hashedPassword,
-        });
+        const newUser = await User.create(req.body);
 
         if (!req.body.refreshToken) {
             newUser.refreshToken = uuid.v4();
@@ -74,6 +63,11 @@ exports.register = async (req, res) => {
 // User Login
 exports.login = async (req, res) => {
     const { username, password } = req.body;
+
+    if (username == undefined || password == undefined) {
+        return res.send("Username and Password fields are required")
+    }
+
     try {
         const user = await User.findOne({ username });
         if (!user || !(await bcrypt.compare(password, user.password))) {
@@ -113,7 +107,7 @@ exports.refreshToken = async (req, res) => {
             return res.status(403).json({ message: 'Invalid refresh token' });
         }
 
-        jwt.verify(refreshToken, process.env.REFRESH_SECRET_KEY, (err, decoded) => {
+        jwt.verify(refreshToken, config.refreshSecretKey, (err, decoded) => {
             if (err) {
                 return res.status(403).json({ message: 'Invalid or expired refresh token' });
             }
@@ -127,3 +121,5 @@ exports.refreshToken = async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 };
+
+
