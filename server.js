@@ -3,6 +3,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const authRoutes = require('./routes/authRoutes');
+const contactRoutes = require('./routes/contactRoutes')
 const cookieParser = require('cookie-parser');
 
 const config = require('./config');
@@ -31,6 +32,7 @@ const connect = async () => {
 }
 
 app.use('/auth', authRoutes);
+app.use('/contacts', contactRoutes);
 
 app.use((err, req, res, next) => {
     console.error(err.stack);

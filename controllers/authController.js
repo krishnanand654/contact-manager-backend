@@ -64,7 +64,7 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
     const { username, password } = req.body;
 
-    if (username == undefined || password == undefined) {
+    if (!username || !password) {
         return res.send("Username and Password fields are required")
     }
 
@@ -74,8 +74,8 @@ exports.login = async (req, res) => {
             return res.status(401).json({ message: 'Invalid username or password' });
         }
 
-        const accessToken = generateAccessToken({ username: user.username });
-        const refreshToken = generateRefreshToken({ username: user.username });
+        const accessToken = generateAccessToken({ user_id: user._id });
+        const refreshToken = generateRefreshToken({ user_id: user._id });
 
         user.refreshToken = refreshToken;
         await user.save();
@@ -112,7 +112,7 @@ exports.refreshToken = async (req, res) => {
                 return res.status(403).json({ message: 'Invalid or expired refresh token' });
             }
 
-            const accessToken = generateAccessToken({ username: user.username });
+            const accessToken = generateAccessToken({ user_id: user._id });
             res.json({ accessToken });
         });
 
