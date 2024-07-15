@@ -34,11 +34,18 @@ exports.createContact = async (req, res) => {
 exports.viewContactsByUser = async (req, res) => {
     try {
         const user_id = req.user_id;
+
+        //pagination 
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+
+        const startIndex = (page - 1) * limit;
+
         if (!user_id) {
             return res.status(401).json({ message: 'Unauthorized access' });
         }
 
-        const data = await Contact.find({ user_id: req.user_id });
+        const data = await Contact.find({ user_id: req.user_id }).skip(startIndex).limit(limit);
         res.status(200).json(data)
     } catch (error) {
         res.status(400).json({ message: error.message })

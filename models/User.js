@@ -18,10 +18,9 @@ const userSchema = new mongoose.Schema({
     },
     profilePicture: { data: Buffer, contentType: String },
     refreshToken: { type: String },
-    username: { type: String, unique: true },
 });
 
-userSchema.index({ email: 1, username: 1 }, { unique: true });
+userSchema.index({ email: 1 }, { unique: true });
 
 userSchema.pre('save', async function (next) {
     const user = this;
