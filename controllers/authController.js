@@ -69,7 +69,7 @@ exports.login = async (req, res) => {
 
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
-            sameSite: 'strict',
+            sameSite: 'lax',
             path: '/'
         });
 

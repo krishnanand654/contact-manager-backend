@@ -1,6 +1,7 @@
 const Contact = require('../models/Contacts')
 
 exports.createContact = async (req, res) => {
+
     const user_id = req.user_id;
 
     if (!user_id) {
@@ -9,7 +10,9 @@ exports.createContact = async (req, res) => {
 
     const { firstName, lastName, address, company, phoneNumbers } = req.body;
 
+
     if (!firstName || !lastName || !address || !company) {
+
         return res.status(400).json({ message: 'All required fields must be provided' });
     }
 
@@ -30,27 +33,36 @@ exports.createContact = async (req, res) => {
     }
 
 }
-
 exports.viewContactsByUser = async (req, res) => {
     try {
         const user_id = req.user_id;
 
-        //pagination 
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
-
+        const page = parseInt(req.query.page);
+        const limit = parseInt(req.query.limit) || 6;
         const startIndex = (page - 1) * limit;
+
+        const sortBy = 'firstName';
+        const sortOrder = req.query.sortOrder === 'desc' ? -1 : 1;
 
         if (!user_id) {
             return res.status(401).json({ message: 'Unauthorized access' });
         }
 
-        const data = await Contact.find({ user_id: req.user_id }).skip(startIndex).limit(limit);
-        res.status(200).json(data)
+
+        const allData = await Contact.find({ user_id: req.user_id })
+            .sort({ [sortBy]: sortOrder });
+
+        if (isNaN(page)) {
+            return res.status(200).json(allData);
+        }
+
+        const paginatedData = allData.slice(startIndex, startIndex + limit);
+
+        res.status(200).json(paginatedData);
     } catch (error) {
-        res.status(400).json({ message: error.message })
+        res.status(400).json({ message: error.message });
     }
-}
+};
 
 exports.viewContactsById = async (req, res) => {
     try {

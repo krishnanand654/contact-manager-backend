@@ -20,7 +20,7 @@ function validateRegistration(req, res, next) {
     // Last Name validation
     if (!lastName) {
         errors.push({ field: 'lastName', message: 'Last Name is required' });
-    } else if (!/^[A-Za-z]+$/.test(lastName)) {
+    } else if (!/^[A-Za-z\s]+$/.test(lastName)) {
         errors.push({ field: 'lastName', message: 'Last Name must contain only alphabetic characters' });
     } else if (lastName.length < 2) {
         errors.push({ field: 'lastName', message: 'Last Name must be at least 2 characters long' });
@@ -48,37 +48,37 @@ function validateRegistration(req, res, next) {
     }
 
     // Date of Birth validation
-    // if (!dateOfBirth) {
-    //     errors.push({ field: 'dob', message: 'Date of Birth is required' });
-    // } else {
-    //     const dobDate = new Date(dateOfBirth);
-    //     const today = new Date();
-    //     if (isNaN(dobDate.getTime())) {
-    //         errors.push({ field: 'dob', message: 'Invalid Date of Birth' });
-    //     } else if (dobDate > today) {
-    //         errors.push({ field: 'dob', message: 'Date of Birth cannot be in the future' });
-    //     } else {
-    //         const age = today.getFullYear() - dobDate.getFullYear();
-    //         const m = today.getMonth() - dobDate.getMonth();
-    //         if (m < 0 || (m === 0 && today.getDate() < dobDate.getDate())) {
-    //             age--;
-    //         }
-    //         if (age < 18) {
-    //             errors.push({ field: 'dob', message: 'You must be at least 18 years old' });
-    //         }
-    //     }
-    // }
+    if (!dateOfBirth) {
+        errors.push({ field: 'dob', message: 'Date of Birth is required' });
+    } else {
+        const dobDate = new Date(dateOfBirth);
+        const today = new Date();
+        if (isNaN(dobDate.getTime())) {
+            errors.push({ field: 'dob', message: 'Invalid Date of Birth' });
+        } else if (dobDate > today) {
+            errors.push({ field: 'dob', message: 'Date of Birth cannot be in the future' });
+        } else {
+            let age = today.getFullYear() - dobDate.getFullYear();
+            const m = today.getMonth() - dobDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < dobDate.getDate())) {
+                age--;
+            }
+            if (age < 18) {
+                errors.push({ field: 'dateOfBirth', message: 'You must be at least 18 years old' });
+            }
+        }
+    }
 
     // Gender validation
     if (!gender) {
         errors.push({ field: 'gender', message: 'Gender is required' });
-    } else if (!['Male', 'Female', 'Other'].includes(gender)) {
+    } else if (!['Male', 'Female', 'Other', 'male', 'female', 'other', 'm', 'f'].includes(gender)) {
         errors.push({ field: 'gender', message: 'Invalid Gender' });
     }
 
     // Phone Number validation
     if (!phoneNumbers) {
-        errors.push({ field: 'phone', message: 'Phone Number is required' });
+        errors.push({ field: 'phoneNumbers', message: 'Phone Number is required' });
     } else if (!/^(?:\+\d{1,3}\s*)?(?:\(\d{3}\)|\d{3})[-.\s]*\d{3}[-.\s]*\d{4}$/.test(phoneNumbers)) {
         console.log(phoneNumbers)
         errors.push({ field: 'phone', message: 'Invalid Phone Number' });
