@@ -1,100 +1,41 @@
-function validatePassword(password) {
-    const regex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
-    return regex.test(password);
-}
+const { body, validationResult } = require('express-validator');
 
+const userValidationRules = () => [
+    body('firstName').notEmpty().withMessage('First name is required'),
+    body('lastName').notEmpty().withMessage('Last name is required'),
+    body('email').isEmail().withMessage('Email is invalid'),
+    body('password')
+        .isLength({ min: 6 }).withMessage('Password must be at least 6 characters long')
+        .matches(/[A-Z]/).withMessage('Password must contain at least one uppercase letter')
+        .matches(/[0-9]/).withMessage('Password must contain at least one number')
+        .matches(/[\W]/).withMessage('Password must contain at least one special character'),
+    body('confirmPassword')
+        .exists().withMessage('Confirm password is required')
+        .custom((value, { req }) => value === req.body.password).withMessage('Passwords do not match'),
+    body('dateOfBirth').isDate().withMessage('Date of birth is required'),
+    body('gender').notEmpty().withMessage('Gender is required'),
+    body('phoneNumber').isLength({ min: 10 }).withMessage('Phone Number must be of length 10').isAlphanumeric().withMessage('Phone number should be digits').notEmpty().withMessage('Phone number is required'),
+    body('address.street').notEmpty().withMessage('Street address is required'),
+    body('address.city').notEmpty().withMessage('City is required'),
+    body('address.state').notEmpty().withMessage('State is required'),
+    body('address.postalCode').isAlphanumeric().withMessage('Postal code should be number').notEmpty().withMessage('Postal code is required'),
+    body('address.country').notEmpty().withMessage('Country is required'),
+];
 
-function validateRegistration(req, res, next) {
-    const { firstName, lastName, email, password, confirmPassword, dateOfBirth, gender, phoneNumbers, address } = req.body;
-    const errors = [];
-
-    // First Name validation
-    if (!firstName) {
-        errors.push({ field: 'firstName', message: 'First Name is required' });
-    } else if (!/^[A-Za-z]+$/.test(firstName)) {
-        errors.push({ field: 'firstName', message: 'First Name must contain only alphabetic characters' });
-    } else if (firstName.length < 2) {
-        errors.push({ field: 'firstName', message: 'First Name must be at least 2 characters long' });
+const validate = (req, res, next) => {
+    const errors = validationResult(req);
+    if (errors.isEmpty()) {
+        return next();
     }
+    const extractedErrors = [];
+    errors.array().map(err => extractedErrors.push({ [err.path]: err.msg }));
 
-    // Last Name validation
-    if (!lastName) {
-        errors.push({ field: 'lastName', message: 'Last Name is required' });
-    } else if (!/^[A-Za-z\s]+$/.test(lastName)) {
-        errors.push({ field: 'lastName', message: 'Last Name must contain only alphabetic characters' });
-    } else if (lastName.length < 2) {
-        errors.push({ field: 'lastName', message: 'Last Name must be at least 2 characters long' });
-    }
-
-    // Email validation
-    if (!email) {
-        errors.push({ field: 'email', message: 'Email Address is required' });
-    } else if (!/^\S+@\S+\.\S+$/.test(email)) {
-        errors.push({ field: 'email', message: 'Invalid Email Address' });
-    }
-
-    // Password validation
-    if (!validatePassword(password)) {
-        errors.push({ field: 'password', message: 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number' });
-    } else if (password.length < 8) {
-        errors.push({ field: 'password', message: 'Password must be at least 8 characters long' });
-    }
-
-    // Confirm Password validation
-    if (!confirmPassword) {
-        errors.push({ field: 'confirmPassword', message: 'Confirm Password is required' });
-    } else if (confirmPassword !== password) {
-        errors.push({ field: 'confirmPassword', message: 'Password confirmation does not match password' });
-    }
-
-    // Date of Birth validation
-    if (!dateOfBirth) {
-        errors.push({ field: 'dob', message: 'Date of Birth is required' });
-    } else {
-        const dobDate = new Date(dateOfBirth);
-        const today = new Date();
-        if (isNaN(dobDate.getTime())) {
-            errors.push({ field: 'dob', message: 'Invalid Date of Birth' });
-        } else if (dobDate > today) {
-            errors.push({ field: 'dob', message: 'Date of Birth cannot be in the future' });
-        } else {
-            let age = today.getFullYear() - dobDate.getFullYear();
-            const m = today.getMonth() - dobDate.getMonth();
-            if (m < 0 || (m === 0 && today.getDate() < dobDate.getDate())) {
-                age--;
-            }
-            if (age < 18) {
-                errors.push({ field: 'dateOfBirth', message: 'You must be at least 18 years old' });
-            }
-        }
-    }
-
-    // Gender validation
-    if (!gender) {
-        errors.push({ field: 'gender', message: 'Gender is required' });
-    } else if (!['Male', 'Female', 'Other', 'male', 'female', 'other', 'm', 'f'].includes(gender)) {
-        errors.push({ field: 'gender', message: 'Invalid Gender' });
-    }
-
-    // Phone Number validation
-    if (!phoneNumbers) {
-        errors.push({ field: 'phoneNumbers', message: 'Phone Number is required' });
-    } else if (!/^(?:\+\d{1,3}\s*)?(?:\(\d{3}\)|\d{3})[-.\s]*\d{3}[-.\s]*\d{4}$/.test(phoneNumbers)) {
-        console.log(phoneNumbers)
-        errors.push({ field: 'phone', message: 'Invalid Phone Number' });
-    }
-
-    // Address validation
-    if (!address) {
-        errors.push({ field: 'address', message: 'Address is required' });
-    }
-
-
-    if (errors.length > 0) {
-        return res.status(422).json({ errors });
-    }
-
-    next();
+    return res.status(422).json({
+        errors: extractedErrors,
+    });
 };
 
-module.exports = validateRegistration;
+module.exports = {
+    userValidationRules,
+    validate,
+};

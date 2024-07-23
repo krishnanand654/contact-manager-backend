@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController'); // Adjust the path as necessary
 const upload = require('../middlewares/upload'); // Adjust the path as necessary
-const validateRegistration = require('../middlewares/validateRegistration');
+// const validateRegistration = require('../middlewares/validateRegistration');
+const { userValidationRules, validate } = require('../middlewares/validateRegistration');
 
 // User registration route
 router.post('/register', (req, res, next) => {
@@ -13,7 +14,7 @@ router.post('/register', (req, res, next) => {
         }
         next();
     });
-}, validateRegistration, authController.register);
+}, userValidationRules(), validate, authController.register);
 
 
 // User login route

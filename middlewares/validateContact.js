@@ -30,13 +30,13 @@ const validateContact = (req, res, next) => {
             errors.push({ phoneNumbers: 'The first phone number must be 10 non-negative digits' });
         }
 
+
         for (let i = 1; i < phoneNumbers.length; i++) {
-            if (typeof phoneNumbers[i] !== 'string' || !/^\d{10}$/.test(phoneNumbers[i])) {
+            if (phoneNumbers[i] && (typeof phoneNumbers[i] !== 'string' || !/^\d{10}$/.test(phoneNumbers[i]))) {
                 errors.push({ phoneNumbers: `Phone number ${i + 1} must be 10 non-negative digits` });
             }
         }
     }
-
     if (errors.length > 0) {
         return res.status(400).json({ errors });
     }

@@ -36,8 +36,12 @@ exports.register = async (req, res) => {
         await newUser.save();
         res.status(201).json({ message: "User registration successful" });
     } catch (error) {
+        console.log(error)
         if (error.code === 11000 && error.keyPattern.email) {
             res.status(400).json({ message: 'Email already exists' });
+        } else if (error.code === 11000 && error.keyPattern.phoneNumber) {
+
+            res.status(400).json({ message: 'Phone number already exists' });
         } else {
             res.status(400).json({ message: 'Error registering user', error });
         }
