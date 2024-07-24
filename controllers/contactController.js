@@ -48,6 +48,7 @@ exports.viewContactsByUser = async (req, res) => {
             return res.status(401).json({ message: 'Unauthorized access' });
         }
 
+        const totalContacts = await Contact.countDocuments({ user_id: req.user_id });
 
         const allData = await Contact.find({ user_id: req.user_id })
             .sort({ [sortBy]: sortOrder });
@@ -58,7 +59,12 @@ exports.viewContactsByUser = async (req, res) => {
 
         const paginatedData = allData.slice(startIndex, startIndex + limit);
 
-        res.status(200).json(paginatedData);
+        res.status(200).json({
+            total: totalContacts,
+            data: paginatedData,
+            currentPage: page,
+            totalPages: Math.ceil(totalContacts / limit)
+        });
     } catch (error) {
         res.status(400).json({ message: error.message });
     }

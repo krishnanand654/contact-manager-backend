@@ -36,7 +36,6 @@ exports.register = async (req, res) => {
         await newUser.save();
         res.status(201).json({ message: "User registration successful" });
     } catch (error) {
-        console.log(error)
         if (error.code === 11000 && error.keyPattern.email) {
             res.status(400).json({ message: 'Email already exists' });
         } else if (error.code === 11000 && error.keyPattern.phoneNumber) {
@@ -51,8 +50,6 @@ exports.register = async (req, res) => {
 // User Login
 exports.login = async (req, res) => {
     const { email, password } = req.body;
-
-
 
     if (!email || !password) {
         return res.send("Email and Password fields are required")
